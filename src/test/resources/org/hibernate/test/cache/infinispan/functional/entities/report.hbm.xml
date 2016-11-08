@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping default-access="field">
+
+    <class name="org.hibernate.test.cache.infinispan.functional.entities.Report" table="report">
+        <cache usage="read-write" />
+
+        <composite-id name="pk" class="org.hibernate.test.cache.infinispan.functional.entities.ReportPk"  >
+            <key-property name="date" /> <!-- access="field" tried, did not work  -->
+            <key-property name="reason" />
+        </composite-id>
+        <property name="total"/>
+    </class>
+
+</hibernate-mapping>

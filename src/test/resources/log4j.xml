@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<!-- Это конфигурация лога для тестов.
+Если логгирование в тестах отсутствует, возможно в classpath присутствует log4j-jboss-logmanager, содержащий
+устаревшую реализацию log4j, не поддерживающую чтение конфига из log4j.xml. -->
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+
+	<!-- ############################################################################################ 
+		Конфигурируется два логгера консоли. Второй используется для вывода ошибок в поток System.err.
+		С целью раскраски ошибок в красный цвет. 
+	-->
+	<appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+		<errorHandler class="org.apache.log4j.helpers.OnlyOnceErrorHandler" />
+		<param name="Target" value="System.out" />
+		<param name="Threshold" value="DEBUG" />
+
+		<layout class="org.apache.log4j.PatternLayout">
+		<!--<param name="ConversionPattern" value="%d{ABSOLUTE} %-5p (%25.25t) %X{offset} [%c{1}] %m%n" /> не удобно сравнивать kdif когда принтуется время -->
+		<!--<param name="ConversionPattern" value="%-5p (%25.25t) %X{offset} [%c{1}] %m%n" />-->
+		<!-- The default pattern: Date Priority [Category] Message\n -->
+			<param name="ConversionPattern" value="%d %-5p [%c{1}] %m%n"/>
+		</layout>
+		
+  		<filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="debug" />
+            <param name="LevelMax" value="info" />
+        </filter>
+		
+	</appender>
+	
+	<appender name="CONSOLE_ERR" class="org.apache.log4j.ConsoleAppender">
+		<errorHandler class="org.apache.log4j.helpers.OnlyOnceErrorHandler" />
+		<param name="Target" value="System.err" />
+		<param name="Threshold" value="WARN" />
+
+		<layout class="org.apache.log4j.PatternLayout">
+			<!--<param name="ConversionPattern" value="%d{ABSOLUTE} %-5p (%25.25t) %X{offset} [%c{1}] %m%n" /> не удобно сравнивать kdif когда принтуется время -->
+		<!--<param name="ConversionPattern" value="%-5p (%25.25t) %X{offset} [%c{1}] %m%n" />-->
+		<!-- The default pattern: Date Priority [Category] Message\n -->
+			<param name="ConversionPattern" value="%d %-5p [%c{1}] %m%n"/>
+		</layout>		
+	</appender>
+    
+
+
+   <!-- A size based file rolling appender
+   		Bug #26306. Чтобы был лог выполнения тестов
+      -->
+   <appender name="FILE" class="org.apache.log4j.RollingFileAppender">
+     <errorHandler class="org.apache.log4j.helpers.OnlyOnceErrorHandler"/>
+     <param name="File" value="target/testlogs/tests.log"/>
+     <param name="Append" value="false"/>
+     <param name="MaxFileSize" value="4048KB"/>
+     <param name="MaxBackupIndex" value="1"/>
+
+     <layout class="org.apache.log4j.PatternLayout">
+		<!--<param name="ConversionPattern" value="%-5p (%25.25t) %X{offset} [%c{1}] %m%n" />-->
+		<!-- The default pattern: Date Priority [Category] Message\n -->
+			<param name="ConversionPattern" value="%d %-5p [%c{1}] %m%n"/>
+     </layout>	    
+   </appender>
+
+<!-- ####################################### -->
+<!-- ############### LOGGERS ############### -->
+<!-- ####################################### -->
+
+<!-- ############### ru.argustelecom. ############### -->
+	<category name="ru.argustelecom">
+		<priority value="DEBUG"/>
+    </category>
+
+
+	<!-- TASK-75468: CallIdStorageSingletonTest замусоривает лог тестов -->
+	<category name="ru.argustelecom.registercontact.callcenter.CallIdStorageSingleton">
+		<priority value="INFO"/>
+	</category>
+
+
+<!-- ############### JBOSS internal ############### -->   
+   <!-- Limit the org.apache category to INFO as its DEBUG is verbose -->
+   <category name="org.apache">
+   
+      <priority value="INFO"/>
+   </category>
+
+   <!-- Limit the org.jboss.serial (jboss-serialization) to INFO as its DEBUG is verbose -->
+   <category name="org.jboss.serial">
+      <priority value="INFO"/>
+   </category>
+
+   <!-- Limit the org.jgroups category to WARN as its INFO is verbose -->
+   <category name="org.jgroups">
+      <priority value="WARN"/>
+   </category>
+
+   <!-- Limit the jacorb category to WARN as its INFO is verbose -->
+   <category name="jacorb">
+      <priority value="WARN"/>
+   </category>
+
+   <!-- Limit the JSR77 categories -->
+   <category name="org.jboss.management">
+      <priority value="INFO"/>
+   </category>
+
+    
+
+<!-- ############### JBPM logging ################# -->
+   <category name="org.jbpm">
+      <priority value="INFO"/> <!-- Иначе лог тестов jbpm слишком большой -->
+   </category>
+
+
+<!-- ############### Hibernate logging ################# -->
+    <category name="org.hibernate">
+        <priority value="WARN"/>
+    </category>
+
+    <!-- Чтобы при загрузке видеть у какой сущности ошибка в hibernate аннотациях -->
+    <category name="org.hibernate.cfg.AnnotationBinder">
+        <priority value="DEBUG"/>
+    </category>
+
+    <category name="org.hibernate.SQL">
+        <priority value="INFO"/>
+    </category>
+    <category name="org.hibernate.type">
+        <priority value="INFO"/>
+    </category>
+    <category name="org.hibernate.loader">
+        <priority value="INFO"/>
+    </category>
+    <category name="org.hibernate.cache">
+        <priority value="INFO"/>
+    </category>
+
+    <category name="org.hibernate.impl.SessionImpl">
+        <priority value="DEBUG"/>
+    </category>
+
+    <category name="org.hibernate.event.def.AbstractFlushingEventListener">
+        <priority value="DEBUG"/>
+    </category>
+
+	<category name="org.hibernate.transaction">
+		<level value="DEBUG" />
+	</category>
+
+	<category name="org.hibernate.tool.hbm2ddl">
+		<!-- В тестах JBPM много ожидаемых ошибок создания схемы БД. -->
+		<level value="FATAL" />
+	</category>
+
+	<!-- WARN  [org.hibernate.orm.connections] HHH10001002: Using Hibernate built-in connection pool (not for production use!) -->
+	<category name="org.hibernate.orm.connections">
+		<!-- В тестах JBPM много ожидаемых ошибок создания схемы БД. -->
+		<level value="FATAL" />
+	</category>
+	
+	<!-- WARN  [org.hibernate.search.engine.impl.ConfigContext] HSEARCH000075: Configuration setting hibernate.search.lucene_version was not specified: using LUCENE_CURRENT.
+	 Не интересен здесь.-->
+	<category name="org.hibernate.search.engine.impl.ConfigContext">
+		<level value="ERROR" />
+	</category>
+
+	<!--WARN  [org.hibernate.internal.SessionFactoryRegistry] HHH000277: Could not bind factory to JNDI
+		org.hibernate.engine.jndi.JndiException: Error parsing JNDI name []
+		Caused by: javax.naming.NoInitialContextException: Need to specify class name in environment or system property, or as an applet parameter, or in an application resource file:  java.naming.factory.initial
+		
+		Нам и не  надо чтобы SessionFactory регистрировался в jndi
+	-->
+	<category name="org.hibernate.internal.SessionFactoryRegistry">
+		<level value="ERROR" />
+	</category>
+	
+	<!-- WARN  [org.hibernate.engine.internal.StatefulPersistenceContext] HHH000179: Narrowing proxy to class org.jbpm.graph.node.TaskNode - this operation breaks == -->
+	<category name="org.hibernate.engine.internal.StatefulPersistenceContext">
+		<level value="ERROR" />
+	</category>
+	
+
+
+<!-- ############### Mondrian logging Bug #26126  ################# -->
+
+
+    <!-- Логгирует текст mdx запросов  и время выполнения-->
+    <category name="mondrian.mdx">
+        <priority value="DEBUG"/>
+    </category>
+
+    <!-- Логгирует план выполнения mdx запроса и время выполнения -->
+    <category name="mondrian.profile">
+        <priority value="DEBUG"/>
+    </category>
+
+    <!-- Все sql  запросы логгируются на уровне JDBC,
+    	Логгировать на уровне mondrian нет необходимости. Bug #38012-->
+    <category name="mondrian.sql">
+        <priority value="INFO"/>
+    </category>
+    
+    <category name="mondrian.rolap">
+        <priority value="INFO"/>
+    </category>
+    
+   <category name="mondrian.olap.Util">
+        <priority value="INFO"/>
+    </category>
+	
+	<!-- Показывает сегменты которые ложатся в кэшь
+    <category name="mondrian.rolap.cache.SegmentCacheIndexImpl">
+        <priority value="DEBUG"/>
+    </category>-->
+    <!--Расскомментируй, чтобы видеть попадания в таблицы агрегации.
+    Вида DEBUG [mondrian.rolap.agg.AggregationManager] MATCH: DWH_INCIDENT 
+    <category name="mondrian.rolap.agg.AggregationManager">
+        <priority value="DEBUG"/>
+    </category>
+    -->
+    
+<!-- ############### SQL (JDBC) LOGGING #################
+	-Bug #38012 
+	-https://code.google.com/p/log4jdbc-log4j2/
+	 4.2.2. Configure the loggers-->
+    	 
+    <!-- Чтобы закрыть все ненужные логгеры на которые log4jdbc  -->
+    <category name="jdbc">
+        <priority value="FATAL"/>
+    </category>
+
+    <category name="jdbc.sql">
+        <priority value="DEBUG"/>
+    </category>
+    
+    <category name="jdbc.connection">
+        <priority value="DEBUG"/>
+    </category>
+    <!-- Для ошибок логгирования -->
+    <category name="jdbc.log4jdbc">
+        <priority value="DEBUG"/>
+    </category>
+    
+    
+<!-- ############### JUnit logging ################# -->
+   <category name="org.junit">
+      <priority value="DEBUG"/>
+   </category>
+   
+   <category name="log4j.category.org.junit">
+      <priority value="DEBUG"/>
+   </category>
+    
+
+
+    
+
+    
+    
+
+    <root>
+        <priority value="INFO"/>
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="CONSOLE_ERR"/>
+        
+        <appender-ref ref="FILE"/>
+    </root>
+
+</log4j:configuration>
