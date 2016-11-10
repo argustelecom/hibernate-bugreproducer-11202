@@ -1,0 +1,17 @@
+.metadata/
+.recommenders/
+target/
+RemoteSystemsTempFiles/
+my.properties
+.forge_settings
+bin/
+.project
+.idea
+.classpath
+.settings/
+*~
+#*#
+*.bak
+*.jasper
+.sass-cache/
+.tern-project

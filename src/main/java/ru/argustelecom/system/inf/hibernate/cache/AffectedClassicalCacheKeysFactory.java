@@ -29,18 +29,18 @@ import org.hibernate.type.Type;
  * @author of copy-past is kostd
  *
  */
-public class ClassicalCacheKeysFactory implements CacheKeysFactory {
+public class AffectedClassicalCacheKeysFactory implements CacheKeysFactory {
 
 	@Override
 	public Object createCollectionKey(Object id, CollectionPersister persister, SessionFactoryImplementor factory,
 			String tenantIdentifier) {
-		return new ClassicalCacheKeyImplementation(id, persister.getKeyType().getClass().getCanonicalName(), persister.getRole(), factory);
+		return new ClassicalCacheKeyImplementation(id, persister.getKeyType(), persister.getRole(), factory);
 	}
 
 	@Override
 	public Object createEntityKey(Object id, EntityPersister persister, SessionFactoryImplementor factory,
 			String tenantIdentifier) {
-		return new ClassicalCacheKeyImplementation(id, persister.getIdentifierType().getClass().getCanonicalName(), persister.getRootEntityName(),
+		return new ClassicalCacheKeyImplementation(id, persister.getIdentifierType(), persister.getRootEntityName(),
 				factory);
 	}
 
@@ -67,31 +67,28 @@ public class ClassicalCacheKeysFactory implements CacheKeysFactory {
 
 	/**
 	 * kostd, TASK-74078: freely copy-pasted from {@link OldCacheKeyImplementation}
-	 * <p>
-	 * HHH-11202, TASK-78464: вместо type теперь используем строковое typeName.
-	 * <p>
-	 * Поэтому #equals теперь вызывает не {@link Type#isEqual(Object, Object)}, а id.equals. А hash рассчитывается не
-	 * хитрым способом, учитывая конкретный Type ключа, а общим, на основании hash самого ключа.
-	 * <p>
-	 * Соответсна, для любого PK {@link #hashCode()} должен быть перекрыт и написан так, чтобы реально определять
-	 * идентичность ключа.
-	 * <p>
+	 * 
+	 *
 	 */
 	static class ClassicalCacheKeyImplementation implements Serializable {
 
 		private static final long serialVersionUID = 1L;
 
 		private final Object id;
-		private final String typeName;
+		private final Type type;
 		private final String entityOrRoleName;
 		private final int hashCode;
 
-		ClassicalCacheKeyImplementation(final Object id, final String typeName, final String entityOrRoleName,
+		ClassicalCacheKeyImplementation(final Object id, final Type type, final String entityOrRoleName,
 				final SessionFactoryImplementor factory) {
 			this.id = id;
-			this.typeName = typeName;
+			this.type = type;
 			this.entityOrRoleName = entityOrRoleName;
-			this.hashCode = 51 + ((id == null)? 0: id.hashCode());
+			this.hashCode = calculateHashCode(type, factory);
+		}
+
+		private int calculateHashCode(Type type, SessionFactoryImplementor factory) {
+			return type.getHashCode(id, factory);
 		}
 
 		public Object getId() {
@@ -100,7 +97,6 @@ public class ClassicalCacheKeysFactory implements CacheKeysFactory {
 
 		@Override
 		public boolean equals(Object other) {
-			
 			if (other == null) {
 				return false;
 			}
@@ -112,9 +108,7 @@ public class ClassicalCacheKeysFactory implements CacheKeysFactory {
 				return false;
 			}
 			final ClassicalCacheKeyImplementation that = (ClassicalCacheKeyImplementation) other;
-			// если мы здесь, значит объекты одного класса (this) и имеют одинаковый hash. По идее, можно уже
-			// возвращать true, но уточним еще кое-что:
-			return EqualsHelper.equals(entityOrRoleName, that.entityOrRoleName) && EqualsHelper.equals(typeName, that.typeName) && EqualsHelper.equals( id, that.id);
+			return EqualsHelper.equals(entityOrRoleName, that.entityOrRoleName) && type.isEqual(id, that.id);
 		}
 
 		@Override

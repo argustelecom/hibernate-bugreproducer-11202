@@ -47,7 +47,7 @@ public class OldCacheKeyBugReproducerTest extends DualNodeTest{
 		super.applyStandardSettings(settings);
 		// applying our CacheKeysFactory, that uses hibernate type metadata in cache-key
 		// this factory like DefaultCacheKeyFactory
-		settings.put("hibernate.cache.keys_factory", "ru.argustelecom.system.inf.hibernate.cache.ClassicalCacheKeysFactory");
+		settings.put("hibernate.cache.keys_factory", "ru.argustelecom.system.inf.hibernate.cache.AffectedClassicalCacheKeysFactory");
 	}
 	
 	
